@@ -1,50 +1,53 @@
 class CountdownTimer {
   constructor({ selector, targetDate }) {
-    this.selector = selector;
+    this.selector = document.querySelector(selector);
+    this.daysSelector = this.selector.querySelector('[data-value="days"]');
+    this.hoursSelector = this.selector.querySelector('[data-value="hours"]');
+    this.minsSelector = this.selector.querySelector('[data-value="mins"]');
+    this.secsSelector = this.selector.querySelector('[data-value="secs"]');
+
+    this.interval = null;
     this.targetDate = targetDate;
+  }
+
+  nonZeroValue(value) {
+    return value <= 0 ? 0 : value
   }
 
   getTimeToTargetDate() {
     const currentDate = Date.now();
     const targetDate = this.targetDate.getTime();
-    const difference = targetDate - currentDate;
-    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(
-      (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-    );
-    const mins = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((difference % (1000 * 60)) / 1000);
+    const diff = targetDate - currentDate;
 
-    const result = {
-      days,
-      hours,
-      mins,
-      secs,
-    };
-    this.renderTime(result);
+    const date = {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      mins: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+      secs: Math.floor((diff % (1000 * 60)) / 1000)
+    }
+
+    this.renderTime(date);
+
+    if (Object.keys(date).every(val => date[val] <= 0)) {
+      clearInterval(this.interval);
+    }
   }
 
   renderTime({ days, hours, mins, secs }) {
-    const container = document.querySelector(this.selector);
-    const daysSelector = container.querySelector('[data-value="days"]');
-    const hoursSelector = container.querySelector('[data-value="hours"]');
-    const minsSelector = container.querySelector('[data-value="mins"]');
-    const secsSelector = container.querySelector('[data-value="secs"]');
-
-    daysSelector.textContent = days;
-    hoursSelector.textContent = hours;
-    minsSelector.textContent = mins;
-    secsSelector.textContent = secs;
+    this.daysSelector.textContent = this.nonZeroValue(days);
+    this.hoursSelector.textContent = this.nonZeroValue(hours);
+    this.minsSelector.textContent = this.nonZeroValue(mins);
+    this.secsSelector.textContent = this.nonZeroValue(secs);
   }
 
   init() {
-    setInterval(this.getTimeToTargetDate.bind(this), 1000);
+    this.interval = setInterval(this.getTimeToTargetDate.bind(this), 1000);
   }
 }
 
 const timer = new CountdownTimer({
   selector: "#timer-1",
-  targetDate: new Date("12/31/2021"),
+  targetDate: new Date("08/21/2021"),
 });
 
 timer.init();
